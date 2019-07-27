@@ -284,12 +284,17 @@ files=$(ls PredictionIO*.tar.gz 2> /dev/null | wc -l)
 
 if [[ $files == 0 ]]; then
   echo "Downloading PredictionIO..."
-  curl -L https://dist.apache.org/repos/dist/release/predictionio/0.12.1/apache-predictionio-0.12.1-bin.tar.gz > predictionio-release.tar.gz
-  tar zxf predictionio-0.12.1.tar.gz
 
-  mv predictionio-0.12.1 PredictionIO
+  curl -L https://archive.apache.org/dist/predictionio/0.14.0/apache-predictionio-0.14.0.tar.gz > predictionio-release.tar.gz
+  mkdir PredictionIO
+  
+  tar zxf predictionio-release.tar.gz -C PredictionIO
 
-  sh PredictionIO/make-distribution.sh
+  cd PredictionIO
+  ./make-distribution.sh
+  
+  cd ..
+  
   cp PredictionIO/${PIO_FILE} ${TEMP_DIR}
   rm -r PredictionIO
 fi
@@ -312,13 +317,14 @@ mkdir -p ${vendors_dir}
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
-if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
+if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.7.tgz ]]; then
   echo "Downloading Spark..."
-  curl -O http://www-us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
+  curl -O https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 fi
-tar xf spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
+
+tar xf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 rm -rf ${spark_dir}
-mv spark-${SPARK_VERSION}-bin-hadoop2.6 ${spark_dir}
+mv spark-${SPARK_VERSION}-bin-hadoop2.7 ${spark_dir}
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
 ${SED_CMD} "s|SPARK_HOME=.*|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
@@ -352,7 +358,7 @@ installES() {
     fi
     if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
       echo "Downloading Elasticsearch..."
-      curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+      curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
     fi
     tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
     rm -rf ${elasticsearch_dir}
